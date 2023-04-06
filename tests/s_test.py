@@ -615,7 +615,7 @@ class ExifTests(unittest.TestCase):
                         print(TAGS["0th"][key]["name"],
                               zeroth_ifd[key][:10], pilDict[key][:10])
                     except:
-                         print(TAGS["0th"][key]["name"],
+                        print(TAGS["0th"][key]["name"],
                                zeroth_ifd[key], pilDict[key])
         for key in sorted(exif_ifd):
             if key in pilDict:
@@ -625,7 +625,7 @@ class ExifTests(unittest.TestCase):
                         print(TAGS["Exif"][key]["name"],
                               exif_ifd[key][:10], pilDict[key][:10])
                     except:
-                         print(TAGS["Exif"][key]["name"],
+                        print(TAGS["Exif"][key]["name"],
                                exif_ifd[key], pilDict[key])
         for key in sorted(gps_ifd):
             if key in gps:
@@ -635,7 +635,7 @@ class ExifTests(unittest.TestCase):
                         print(TAGS["GPS"][key]["name"],
                               gps_ifd[key][:10], gps[key][:10])
                     except:
-                         print(TAGS["GPS"][key]["name"],
+                        print(TAGS["GPS"][key]["name"],
                                gps_ifd[key], gps[key])
 
 
