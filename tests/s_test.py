@@ -732,28 +732,28 @@ class UTests(unittest.TestCase):
     def test_dump_user_comment(self):
         # ascii
         header = b"\x41\x53\x43\x49\x49\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("ascii")
         result = helper.UserComment.dump(string, "ascii")
         self.assertEqual(binary, result)
 
         # jis
         header = b"\x4a\x49\x53\x00\x00\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("shift_jis")
         result = helper.UserComment.dump(string, "jis")
         self.assertEqual(binary, result)
 
         # unicode
         header = b"\x55\x4e\x49\x43\x4f\x44\x45\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("utf-16-be")
         result = helper.UserComment.dump(string, "unicode")
         self.assertEqual(binary, result)
 
         # undefined
         header = b"\x00\x00\x00\x00\x00\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("latin")
         self.assertRaises(ValueError, helper.UserComment.dump, string, "undefined")
 
@@ -761,28 +761,28 @@ class UTests(unittest.TestCase):
     def test_load_user_comment(self):
         # ascii
         header = b"\x41\x53\x43\x49\x49\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("ascii")
         result = helper.UserComment.load(binary)
         self.assertEqual(string, result)
 
         # jis
         header = b"\x4a\x49\x53\x00\x00\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("shift_jis")
         result = helper.UserComment.load(binary)
         self.assertEqual(string, result)
 
         # unicode
         header = b"\x55\x4e\x49\x43\x4f\x44\x45\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("utf-16-be")
         result = helper.UserComment.load(binary)
         self.assertEqual(string, result)
 
         # undefined
         header = b"\x00\x00\x00\x00\x00\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("ascii")
         self.assertRaises(ValueError, helper.UserComment.load, binary)
 
