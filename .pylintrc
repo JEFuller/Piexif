@@ -1,2 +1,3 @@
 [MESSAGES CONTROL]
-disable=invalid-name
+disable=invalid-name,
+    duplicate-code
