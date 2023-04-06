@@ -7,4 +7,5 @@ disable=invalid-name,
     too-many-statements,
     missing-module-docstring,
     missing-function-docstring,
-    missing-class-docstring
+    missing-class-docstring,
+    unused-variable
