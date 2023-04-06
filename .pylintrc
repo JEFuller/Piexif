@@ -35,4 +35,5 @@ disable=invalid-name,
     unidiomatic-typecheck,
     unspecified-encoding,
     useless-object-inheritance,
-    wildcard-import
+    wildcard-import,
+    attribute-defined-outside-init
