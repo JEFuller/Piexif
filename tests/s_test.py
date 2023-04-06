@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import copy
 import glob
 import io
 import os
 import struct
-import sys
 import time
 import unittest
 
