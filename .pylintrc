@@ -1,4 +1,7 @@
 [MESSAGES CONTROL]
 disable=invalid-name,
     duplicate-code,
-    line-too-long
+    line-too-long,
+    too-many-locals,
+    too-many-branches,
+    too-many-statements
