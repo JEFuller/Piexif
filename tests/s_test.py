@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import copy
 import glob
 import io
 import os
 import struct
-import sys
 import time
 import unittest
 
@@ -180,7 +178,7 @@ class ExifTests(unittest.TestCase):
         print(exif)
 
     def test_load_unicode_filename(self):
-        input_file = os.path.join(u"tests", u"images", u"r_sony.jpg")
+        input_file = os.path.join("tests", "images", "r_sony.jpg")
         exif = piexif.load(input_file)
         e = load_exif_by_PIL(input_file)
         self._compare_piexifDict_PILDict(exif, e, p=False)
@@ -617,7 +615,7 @@ class ExifTests(unittest.TestCase):
                         print(TAGS["0th"][key]["name"],
                               zeroth_ifd[key][:10], pilDict[key][:10])
                     except:
-                         print(TAGS["0th"][key]["name"],
+                        print(TAGS["0th"][key]["name"],
                                zeroth_ifd[key], pilDict[key])
         for key in sorted(exif_ifd):
             if key in pilDict:
@@ -627,7 +625,7 @@ class ExifTests(unittest.TestCase):
                         print(TAGS["Exif"][key]["name"],
                               exif_ifd[key][:10], pilDict[key][:10])
                     except:
-                         print(TAGS["Exif"][key]["name"],
+                        print(TAGS["Exif"][key]["name"],
                                exif_ifd[key], pilDict[key])
         for key in sorted(gps_ifd):
             if key in gps:
@@ -637,7 +635,7 @@ class ExifTests(unittest.TestCase):
                         print(TAGS["GPS"][key]["name"],
                               gps_ifd[key][:10], gps[key][:10])
                     except:
-                         print(TAGS["GPS"][key]["name"],
+                        print(TAGS["GPS"][key]["name"],
                                gps_ifd[key], gps[key])
 
 
@@ -734,28 +732,28 @@ class UTests(unittest.TestCase):
     def test_dump_user_comment(self):
         # ascii
         header = b"\x41\x53\x43\x49\x49\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("ascii")
         result = helper.UserComment.dump(string, "ascii")
         self.assertEqual(binary, result)
 
         # jis
         header = b"\x4a\x49\x53\x00\x00\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("shift_jis")
         result = helper.UserComment.dump(string, "jis")
         self.assertEqual(binary, result)
 
         # unicode
         header = b"\x55\x4e\x49\x43\x4f\x44\x45\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("utf-16-be")
         result = helper.UserComment.dump(string, "unicode")
         self.assertEqual(binary, result)
 
         # undefined
         header = b"\x00\x00\x00\x00\x00\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("latin")
         self.assertRaises(ValueError, helper.UserComment.dump, string, "undefined")
 
@@ -763,28 +761,28 @@ class UTests(unittest.TestCase):
     def test_load_user_comment(self):
         # ascii
         header = b"\x41\x53\x43\x49\x49\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("ascii")
         result = helper.UserComment.load(binary)
         self.assertEqual(string, result)
 
         # jis
         header = b"\x4a\x49\x53\x00\x00\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("shift_jis")
         result = helper.UserComment.load(binary)
         self.assertEqual(string, result)
 
         # unicode
         header = b"\x55\x4e\x49\x43\x4f\x44\x45\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("utf-16-be")
         result = helper.UserComment.load(binary)
         self.assertEqual(string, result)
 
         # undefined
         header = b"\x00\x00\x00\x00\x00\x00\x00\x00"
-        string = u"abcd"
+        string = "abcd"
         binary = header + string.encode("ascii")
         self.assertRaises(ValueError, helper.UserComment.load, binary)
 
