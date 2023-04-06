@@ -4,4 +4,7 @@ disable=invalid-name,
     line-too-long,
     too-many-locals,
     too-many-branches,
-    too-many-statements
+    too-many-statements,
+    missing-module-docstring,
+    missing-function-docstring,
+    missing-class-docstring
