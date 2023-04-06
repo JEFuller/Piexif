@@ -1,5 +1,5 @@
-from setuptools import setup
 import sys
+from setuptools import setup
 
 import piexif
 
