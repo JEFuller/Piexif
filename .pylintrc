@@ -1,3 +1,4 @@
 [MESSAGES CONTROL]
 disable=invalid-name,
-    duplicate-code
+    duplicate-code,
+    line-too-long
