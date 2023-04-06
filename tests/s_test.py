@@ -180,7 +180,7 @@ class ExifTests(unittest.TestCase):
         print(exif)
 
     def test_load_unicode_filename(self):
-        input_file = os.path.join(u"tests", u"images", u"r_sony.jpg")
+        input_file = os.path.join("tests", "images", "r_sony.jpg")
         exif = piexif.load(input_file)
         e = load_exif_by_PIL(input_file)
         self._compare_piexifDict_PILDict(exif, e, p=False)
