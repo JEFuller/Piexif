@@ -176,8 +176,6 @@ def get_exif(data):
     CHUNK_FOURCC_LENGTH = 4
     LENGTH_BYTES_LENGTH = 4
 
-    chunks = []
-    exif = b""
     while pointer < file_size:
         fourcc = data[pointer:pointer + CHUNK_FOURCC_LENGTH]
         pointer += CHUNK_FOURCC_LENGTH

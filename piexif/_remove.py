@@ -1,7 +1,7 @@
 import io
 
-from ._common import *
 from piexif import _webp
+from ._common import *
 
 def remove(src, new_file=None):
     """
