@@ -313,7 +313,7 @@ def _dict_to_bytes(ifd_dict, ifd, ifd_offset):
     entries = b""
     values = b""
 
-    for n, key in enumerate(sorted(ifd_dict)):
+    for n, key in enumerate(ifd_dict):
         if (ifd == "0th") and (key in (ImageIFD.ExifTag, ImageIFD.GPSTag)):
             continue
         elif (ifd == "Exif") and (key == ExifIFD.InteroperabilityTag):
