@@ -15,7 +15,7 @@ def transplant(exif_src, image, new_file=None):
     if exif_src[0:2] == b"\xff\xd8":
         src_data = exif_src
     else:
-        with open(exif_src, 'rb') as f:
+        with open(exif_src, "rb") as f:
             src_data = f.read()
     segments = split_into_segments(src_data)
     exif = get_exif_seg(segments)
@@ -26,7 +26,7 @@ def transplant(exif_src, image, new_file=None):
     if image[0:2] == b"\xff\xd8":
         image_data = image
     else:
-        with open(image, 'rb') as f:
+        with open(image, "rb") as f:
             image_data = f.read()
         output_file = True
     segments = split_into_segments(image_data)
