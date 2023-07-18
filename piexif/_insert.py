@@ -6,6 +6,7 @@ from piexif import _webp
 from ._common import *
 from ._exceptions import InvalidImageDataError
 
+
 def insert(exif, image, new_file=None):
     """
     py:function:: piexif.insert(exif_bytes, filename)
@@ -20,7 +21,7 @@ def insert(exif, image, new_file=None):
 
     output_file = False
     # Prevents "UnicodeWarning: Unicode equal comparison failed" warnings on Python 2
-    maybe_image = sys.version_info >= (3,0,0) or isinstance(image, str)
+    maybe_image = sys.version_info >= (3, 0, 0) or isinstance(image, str)
 
     if maybe_image and image[0:2] == b"\xff\xd8":
         image_data = image
@@ -29,7 +30,7 @@ def insert(exif, image, new_file=None):
         image_data = image
         file_type = "webp"
     else:
-        with open(image, 'rb') as f:
+        with open(image, "rb") as f:
             image_data = f.read()
         if image_data[0:2] == b"\xff\xd8":
             file_type = "jpeg"

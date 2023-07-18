@@ -1,4 +1,3 @@
-
 import struct
 
 
@@ -18,26 +17,33 @@ def split(data):
 
     chunks = []
     while pointer + CHUNK_FOURCC_LENGTH + LENGTH_BYTES_LENGTH < file_size:
-        fourcc = data[pointer:pointer + CHUNK_FOURCC_LENGTH]
+        fourcc = data[pointer : pointer + CHUNK_FOURCC_LENGTH]
         pointer += CHUNK_FOURCC_LENGTH
-        chunk_length_bytes = data[pointer:pointer + LENGTH_BYTES_LENGTH]
+        chunk_length_bytes = data[pointer : pointer + LENGTH_BYTES_LENGTH]
         chunk_length = struct.unpack("<L", chunk_length_bytes)[0]
         pointer += LENGTH_BYTES_LENGTH
 
-        chunk_data = data[pointer:pointer + chunk_length]
-        chunks.append({"fourcc":fourcc, "length_bytes":chunk_length_bytes, "data":chunk_data})
+        chunk_data = data[pointer : pointer + chunk_length]
+        chunks.append(
+            {"fourcc": fourcc, "length_bytes": chunk_length_bytes, "data": chunk_data}
+        )
 
         padding = 1 if chunk_length % 2 else 0
 
         pointer += chunk_length + padding
     return chunks
 
+
 def merge_chunks(chunks):
-    merged = b"".join([chunk["fourcc"] 
-                       + chunk["length_bytes"]
-                       + chunk["data"]
-                       + (len(chunk["data"]) % 2) * b"\x00"
-                        for chunk in chunks])
+    merged = b"".join(
+        [
+            chunk["fourcc"]
+            + chunk["length_bytes"]
+            + chunk["data"]
+            + (len(chunk["data"]) % 2) * b"\x00"
+            for chunk in chunks
+        ]
+    )
     return merged
 
 
@@ -50,6 +56,7 @@ def _get_size_from_vp8x(chunk):
     height = height_minus_one + 1
     return (width, height)
 
+
 def _get_size_from_vp8(chunk):
     BEGIN_CODE = b"\x9d\x01\x2a"
     begin_index = chunk["data"].find(BEGIN_CODE)
@@ -59,16 +66,20 @@ def _get_size_from_vp8(chunk):
         BEGIN_CODE_LENGTH = len(BEGIN_CODE)
         LENGTH_BYTES_LENGTH = 2
         length_start = begin_index + BEGIN_CODE_LENGTH
-        width_bytes = chunk["data"][length_start:length_start + LENGTH_BYTES_LENGTH]
+        width_bytes = chunk["data"][length_start : length_start + LENGTH_BYTES_LENGTH]
         width = struct.unpack("<H", width_bytes)[0]
-        height_bytes = chunk["data"][length_start + LENGTH_BYTES_LENGTH:length_start + 2 * LENGTH_BYTES_LENGTH]
+        height_bytes = chunk["data"][
+            length_start + LENGTH_BYTES_LENGTH : length_start + 2 * LENGTH_BYTES_LENGTH
+        ]
         height = struct.unpack("<H", height_bytes)[0]
         return (width, height)
 
+
 def _vp8L_contains_alpha(chunk_data):
-    flag = ord(chunk_data[4:5]) >> 5-1 & ord(b"\x01")
+    flag = ord(chunk_data[4:5]) >> 5 - 1 & ord(b"\x01")
     contains = 1 * flag
     return contains
+
 
 def _get_size_from_vp8L(chunk):
     b1 = chunk["data"][1:2]
@@ -79,10 +90,13 @@ def _get_size_from_vp8L(chunk):
     width_minus_one = (ord(b2) & ord(b"\x3F")) << 8 | ord(b1)
     width = width_minus_one + 1
 
-    height_minus_one = (ord(b4) & ord(b"\x0F")) << 10 | ord(b3) << 2 | (ord(b2) & ord(b"\xC0")) >> 6
+    height_minus_one = (
+        (ord(b4) & ord(b"\x0F")) << 10 | ord(b3) << 2 | (ord(b2) & ord(b"\xC0")) >> 6
+    )
     height = height_minus_one + 1
 
     return (width, height)
+
 
 def _get_size_from_anmf(chunk):
     width_minus_one_bytes = chunk["data"][6:9] + b"\x00"
@@ -92,12 +106,22 @@ def _get_size_from_anmf(chunk):
     height_minus_one = struct.unpack("<L", height_minus_one_bytes)[0]
     height = height_minus_one + 1
     return (width, height)
-    
+
+
 def set_vp8x(chunks):
 
     width = None
     height = None
-    flags = [b"0", b"0", b"0", b"0", b"0", b"0", b"0", b"0"]  # [0, 0, ICC, Alpha, EXIF, XMP, Anim, 0]
+    flags = [
+        b"0",
+        b"0",
+        b"0",
+        b"0",
+        b"0",
+        b"0",
+        b"0",
+        b"0",
+    ]  # [0, 0, ICC, Alpha, EXIF, XMP, Anim, 0]
 
     for chunk in chunks:
         if chunk["fourcc"] == b"VP8X":
@@ -136,10 +160,15 @@ def set_vp8x(chunks):
 
     data_bytes = flags_bytes + padding_bytes + width_bytes + height_bytes
 
-    vp8x_chunk = {"fourcc":header_bytes, "length_bytes":length_bytes, "data":data_bytes}
+    vp8x_chunk = {
+        "fourcc": header_bytes,
+        "length_bytes": length_bytes,
+        "data": data_bytes,
+    }
     chunks.insert(0, vp8x_chunk)
 
     return chunks
+
 
 def get_file_header(chunks):
     WEBP_HEADER_LENGTH = 4
@@ -156,7 +185,6 @@ def get_file_header(chunks):
     webp_header = b"WEBP"
     file_header = riff + length_bytes + webp_header
     return file_header
-
 
 
 def get_exif(data):
@@ -177,15 +205,15 @@ def get_exif(data):
     LENGTH_BYTES_LENGTH = 4
 
     while pointer < file_size:
-        fourcc = data[pointer:pointer + CHUNK_FOURCC_LENGTH]
+        fourcc = data[pointer : pointer + CHUNK_FOURCC_LENGTH]
         pointer += CHUNK_FOURCC_LENGTH
-        chunk_length_bytes = data[pointer:pointer + LENGTH_BYTES_LENGTH]
+        chunk_length_bytes = data[pointer : pointer + LENGTH_BYTES_LENGTH]
         chunk_length = struct.unpack("<L", chunk_length_bytes)[0]
         if chunk_length % 2:
             chunk_length += 1
         pointer += LENGTH_BYTES_LENGTH
         if fourcc == b"EXIF":
-            return data[pointer:pointer + chunk_length]
+            return data[pointer : pointer + chunk_length]
         pointer += chunk_length
     return None  # if there isn't exif, return None.
 
@@ -193,7 +221,11 @@ def get_exif(data):
 def insert_exif_into_chunks(chunks, exif_bytes):
     EXIF_HEADER = b"EXIF"
     exif_length_bytes = struct.pack("<L", len(exif_bytes))
-    exif_chunk = {"fourcc":EXIF_HEADER, "length_bytes":exif_length_bytes, "data":exif_bytes}
+    exif_chunk = {
+        "fourcc": EXIF_HEADER,
+        "length_bytes": exif_length_bytes,
+        "data": exif_bytes,
+    }
 
     xmp_index = None
     animation_index = None

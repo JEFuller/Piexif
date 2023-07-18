@@ -3,6 +3,7 @@ import io
 from piexif import _webp
 from ._common import *
 
+
 def remove(src, new_file=None):
     """
     py:function:: piexif.remove(filename)
@@ -19,7 +20,7 @@ def remove(src, new_file=None):
         src_data = src
         file_type = "webp"
     else:
-        with open(src, 'rb') as f:
+        with open(src, "rb") as f:
             src_data = f.read()
         output_is_file = True
         if src_data[0:2] == b"\xff\xd8":
