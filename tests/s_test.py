@@ -641,15 +641,14 @@ class ExifTests(unittest.TestCase):
         for key in sorted(zeroth_ifd):
             if key in pilDict:
                 self._compare_value(zeroth_ifd[key], pilDict[key])
-                if p:
-                    try:
-                        print(
-                            TAGS["0th"][key]["name"],
-                            zeroth_ifd[key][:10],
-                            pilDict[key][:10],
-                        )
-                    except:
-                        print(TAGS["0th"][key]["name"], zeroth_ifd[key], pilDict[key])
+                try:
+                    logging.debug(
+                        TAGS["0th"][key]["name"],
+                        zeroth_ifd[key][:10],
+                        pilDict[key][:10],
+                    )
+                except:
+                    logging.debug(TAGS["0th"][key]["name"], zeroth_ifd[key], pilDict[key])
         for key in sorted(exif_ifd):
             if key in pilDict:
                 self._compare_value(exif_ifd[key], pilDict[key])
@@ -665,13 +664,12 @@ class ExifTests(unittest.TestCase):
         for key in sorted(gps_ifd):
             if key in gps:
                 self._compare_value(gps_ifd[key], gps[key])
-                if p:
-                    try:
-                        print(
-                            TAGS["GPS"][key]["name"], gps_ifd[key][:10], gps[key][:10]
-                        )
-                    except:
-                        print(TAGS["GPS"][key]["name"], gps_ifd[key], gps[key])
+                try:
+                    logging.debug(
+                        TAGS["GPS"][key]["name"], gps_ifd[key][:10], gps[key][:10]
+                    )
+                except:
+                    logging.debug(TAGS["GPS"][key]["name"], gps_ifd[key], gps[key])
 
 
 class UTests(unittest.TestCase):
