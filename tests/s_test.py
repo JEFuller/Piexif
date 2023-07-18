@@ -648,7 +648,9 @@ class ExifTests(unittest.TestCase):
                         pilDict[key][:10],
                     )
                 except:
-                    logging.debug(TAGS["0th"][key]["name"], zeroth_ifd[key], pilDict[key])
+                    logging.debug(
+                        TAGS["0th"][key]["name"], zeroth_ifd[key], pilDict[key]
+                    )
         for key in sorted(exif_ifd):
             if key in pilDict:
                 self._compare_value(exif_ifd[key], pilDict[key])
