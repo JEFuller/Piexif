@@ -109,7 +109,6 @@ def _get_size_from_anmf(chunk):
 
 
 def set_vp8x(chunks):
-
     width = None
     height = None
     flags = [
