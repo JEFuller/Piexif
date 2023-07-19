@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 
 import glob
 import io
+import logging
 import os
 import struct
 import time
 import unittest
 
 from PIL import Image
-import piexif
-from piexif import _common, ImageIFD, ExifIFD, GPSIFD, TAGS, InvalidImageDataError
-from piexif import _webp
-from piexif import helper
 
-import logging
+import piexif
+from piexif import (GPSIFD, TAGS, ExifIFD, ImageIFD, InvalidImageDataError,
+                    _common, _webp, helper)
 
 IMAGE_DIR = "tests/images/"
 OUT_DIR = "tests/images/out/"
@@ -81,12 +81,8 @@ INTEROP_IFD = {piexif.InteropIFD.InteroperabilityIndex: b"R98"}
 
 def iter_pil_compatible_images(filenames: list[str]) -> str:
     for filename in filenames:
-        try:
-            Image.open(IMAGE_DIR + filename)
-            yield filename
-        except Exception as e:
-            logging.warning(f"Pillow can't read {filename}. Skipping...", exc_info=e)
-            continue
+        Image.open(IMAGE_DIR + filename)
+        yield filename
 
 
 def load_exif_by_PIL(f):
