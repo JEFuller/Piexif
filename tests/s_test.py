@@ -131,7 +131,7 @@ class ExifTests(unittest.TestCase):
         """'load' on memory."""
         exif = piexif.load(I1)
         e = load_exif_by_PIL(INPUT_FILE1)
-        logging.warning("********************\n\n" + INPUT_FILE1 + "\n")
+        logging.warning("********************\n\n%s\n", INPUT_FILE1)
         self._compare_piexifDict_PILDict(exif, e)
 
     def test_load_tif(self):
@@ -219,7 +219,7 @@ class ExifTests(unittest.TestCase):
         t = time.time()
         exif_bytes = piexif.dump(exif_dict)
         t_cost = time.time() - t
-        logging.debug("'dump': {}[sec]".format(t_cost))
+        logging.debug("'dump': %s[sec]", t_cost)
         im = Image.new("RGB", (8, 8))
 
         o = io.BytesIO()
@@ -434,7 +434,7 @@ class ExifTests(unittest.TestCase):
     def test_roundtrip_files(self):
         files = glob.glob(os.path.join("tests", "images", "r_*.jpg"))
         for input_file in files:
-            logging.info(f"loading input file: {input_file}")
+            logging.info(f"loading input file: %s", input_file)
             exif = piexif.load(input_file)
             exif_bytes = piexif.dump(exif)
             o = io.BytesIO()
@@ -658,15 +658,14 @@ class ExifTests(unittest.TestCase):
         for key in sorted(exif_ifd):
             if key in pilDict:
                 self._compare_value(exif_ifd[key], pilDict[key])
-                if p:
-                    try:
-                        print(
-                            TAGS["Exif"][key]["name"],
-                            exif_ifd[key][:10],
-                            pilDict[key][:10],
-                        )
-                    except:
-                        print(TAGS["Exif"][key]["name"], exif_ifd[key], pilDict[key])
+                try:
+                    logging.debug(
+                        TAGS["Exif"][key]["name"],
+                        exif_ifd[key][:10],
+                        pilDict[key][:10],
+                    )
+                except:
+                    logging.debug(TAGS["Exif"][key]["name"], exif_ifd[key], pilDict[key])
         for key in sorted(gps_ifd):
             if key in gps:
                 self._compare_value(gps_ifd[key], gps[key])
