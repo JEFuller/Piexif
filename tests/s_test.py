@@ -12,8 +12,16 @@ import unittest
 from PIL import Image
 
 import piexif
-from piexif import (GPSIFD, TAGS, ExifIFD, ImageIFD, InvalidImageDataError,
-                    _common, _webp, helper)
+from piexif import (
+    GPSIFD,
+    TAGS,
+    ExifIFD,
+    ImageIFD,
+    InvalidImageDataError,
+    _common,
+    _webp,
+    helper,
+)
 
 IMAGE_DIR = "tests/images/"
 OUT_DIR = "tests/images/out/"
