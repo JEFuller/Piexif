@@ -1,7 +1,7 @@
 import io
 
 from piexif import _webp
-from ._common import *
+from ._common import split_into_segments, get_exif_seg
 
 
 def remove(src, new_file=None):
@@ -27,6 +27,8 @@ def remove(src, new_file=None):
             file_type = "jpeg"
         elif src_data[0:4] == b"RIFF" and src_data[8:12] == b"WEBP":
             file_type = "webp"
+        else:
+            raise RuntimeError("Cannot detect source file type.")
 
     if file_type == "jpeg":
         segments = split_into_segments(src_data)
@@ -35,14 +37,15 @@ def remove(src, new_file=None):
             new_data = src_data.replace(exif, b"")
         else:
             new_data = src_data
-    elif file_type == "webp":
+    else:
+        # Filetype is webp as this is the only other option
         try:
             new_data = _webp.remove(src_data)
         except ValueError:
             new_data = src_data
-        except e:
+        except Exception as e:
             print(e.args)
-            raise ValueError("Error occurred.")
+            raise ValueError("Error occurred.") from e
 
     if isinstance(new_file, io.BytesIO):
         new_file.write(new_data)

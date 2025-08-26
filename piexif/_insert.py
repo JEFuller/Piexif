@@ -3,7 +3,7 @@ import struct
 import sys
 
 from piexif import _webp
-from ._common import *
+from ._common import split_into_segments, merge_segments
 from ._exceptions import InvalidImageDataError
 
 

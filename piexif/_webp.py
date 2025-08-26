@@ -87,11 +87,11 @@ def _get_size_from_vp8L(chunk):
     b3 = chunk["data"][3:4]
     b4 = chunk["data"][4:5]
 
-    width_minus_one = (ord(b2) & ord(b"\x3F")) << 8 | ord(b1)
+    width_minus_one = (ord(b2) & ord(b"\x3f")) << 8 | ord(b1)
     width = width_minus_one + 1
 
     height_minus_one = (
-        (ord(b4) & ord(b"\x0F")) << 10 | ord(b3) << 2 | (ord(b2) & ord(b"\xC0")) >> 6
+        (ord(b4) & ord(b"\x0f")) << 10 | ord(b3) << 2 | (ord(b2) & ord(b"\xc0")) >> 6
     )
     height = height_minus_one + 1
 

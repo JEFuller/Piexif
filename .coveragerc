@@ -1,0 +1,8 @@
+[run]
+branch = True
+source = piexif
+
+[report]
+show_missing = True
+skip_covered = False
+precision = 2

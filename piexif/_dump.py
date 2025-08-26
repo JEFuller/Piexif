@@ -2,8 +2,9 @@ import copy
 import numbers
 import struct
 
-from ._common import *
-from ._exif import *
+from ._common import split_into_segments
+
+from ._exif import ExifIFD, ImageIFD, TAGS, TYPES
 
 
 TIFF_HEADER_LENGTH = 8
@@ -244,7 +245,7 @@ def _value_to_bytes(raw_value, value_type, offset):
     elif value_type == TYPES.Ascii:
         try:
             new_value = raw_value.encode("latin1") + b"\x00"
-        except:
+        except Exception:
             try:
                 new_value = raw_value + b"\x00"
             except TypeError:

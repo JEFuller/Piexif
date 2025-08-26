@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import glob
@@ -10,6 +9,7 @@ import time
 import unittest
 
 from PIL import Image
+from PIL.TiffImagePlugin import IFDRational
 
 import piexif
 from piexif import (
@@ -17,91 +17,24 @@ from piexif import (
     TAGS,
     ExifIFD,
     ImageIFD,
-    InvalidImageDataError,
-    _common,
-    _webp,
-    helper,
 )
 
-IMAGE_DIR = "tests/images/"
-OUT_DIR = "tests/images/out/"
-
-INPUT_FILE1 = os.path.join("tests", "images", "01.jpg")
-INPUT_FILE2 = os.path.join("tests", "images", "02.jpg")
-INPUT_FILE_PEN = os.path.join("tests", "images", "r_pen.jpg")
-NOEXIF_FILE = os.path.join("tests", "images", "noexif.jpg")
-# JPEG without APP0 and APP1 segments
-NOAPP01_FILE = os.path.join("tests", "images", "noapp01.jpg")
-INPUT_FILE_TIF = os.path.join("tests", "images", "01.tif")
-
-
-with open(INPUT_FILE1, "rb") as f:
-    I1 = f.read()
-with open(INPUT_FILE2, "rb") as f:
-    I2 = f.read()
-
-
-ZEROTH_IFD = {
-    ImageIFD.Software: b"PIL",  # ascii
-    ImageIFD.Make: b"Make",  # ascii
-    ImageIFD.Model: b"XXX-XXX",  # ascii
-    ImageIFD.ResolutionUnit: 65535,  # short
-    ImageIFD.BitsPerSample: (24, 24, 24),  # short * 3
-    ImageIFD.XResolution: (4294967295, 1),  # rational
-    ImageIFD.BlackLevelDeltaH: ((1, 1), (1, 1), (1, 1)),  # srational
-    ImageIFD.ZZZTestSlong1: -11,
-    ImageIFD.ZZZTestSlong2: (-11, -11, -11, -11),
-}
-
-
-EXIF_IFD = {
-    ExifIFD.DateTimeOriginal: b"2099:09:29 10:10:10",  # ascii
-    ExifIFD.LensMake: b"LensMake",  # ascii
-    ExifIFD.OECF: b"\xaa\xaa\xaa\xaa\xaa\xaa",  # undefined
-    ExifIFD.Sharpness: 65535,  # short
-    ExifIFD.ISOSpeed: 4294967295,  # long
-    ExifIFD.ExposureTime: (4294967295, 1),  # rational
-    ExifIFD.LensSpecification: ((1, 1), (1, 1), (1, 1), (1, 1)),
-    ExifIFD.ExposureBiasValue: (2147483647, -2147483648),  # srational
-}
-
-
-GPS_IFD = {
-    GPSIFD.GPSVersionID: (0, 0, 0, 1),  # byte
-    GPSIFD.GPSAltitudeRef: 1,  # byte
-    GPSIFD.GPSDateStamp: b"1999:99:99 99:99:99",  # ascii
-    GPSIFD.GPSDifferential: 65535,  # short
-    GPSIFD.GPSLatitude: (4294967295, 1),  # rational
-}
-
-
-FIRST_IFD = {
-    ImageIFD.Software: b"PIL",  # ascii
-    ImageIFD.Make: b"Make",  # ascii
-    ImageIFD.Model: b"XXX-XXX",  # ascii
-    ImageIFD.BitsPerSample: (24, 24, 24),  # short * 3
-    ImageIFD.BlackLevelDeltaH: ((1, 1), (1, 1), (1, 1)),  # srational
-}
-
-
-INTEROP_IFD = {piexif.InteropIFD.InteroperabilityIndex: b"R98"}
-
-
-def iter_pil_compatible_images(filenames: list[str]) -> str:
-    for filename in filenames:
-        Image.open(IMAGE_DIR + filename)
-        yield filename
-
-
-def load_exif_by_PIL(f):
-    i = Image.open(f)
-    e = i._getexif()
-    i.close()
-    return e
-
-
-def pack_byte(*args):
-    return struct.pack("B" * len(args), *args)
+from .utils import (
+    INPUT_FILE1,
+    INPUT_FILE2,
+    INPUT_FILE_PEN,
+    NOEXIF_FILE,
+    INPUT_FILE_TIF,
+    ZEROTH_IFD,
+    EXIF_IFD,
+    GPS_IFD,
+    FIRST_IFD,
+    INTEROP_IFD,
+    load_exif_by_PIL,
+    pack_byte,
+    I1,
+    I2,
+)
 
 
 class ExifTests(unittest.TestCase):
@@ -120,7 +53,7 @@ class ExifTests(unittest.TestCase):
         }
         self.assertEqual(exif_dict, none_dict)
 
-    def test_load(self):
+    def test_load_only(self):
         files = glob.glob(os.path.join("tests", "images", "r_*.jpg"))
         for input_file in files:
             exif = piexif.load(input_file)
@@ -226,7 +159,7 @@ class ExifTests(unittest.TestCase):
         im.save(o, format="jpeg", exif=exif_bytes)
         im.close()
         o.seek(0)
-        exif = load_exif_by_PIL(o)
+        load_exif_by_PIL(o)
 
     def test_dump_fail(self):
         with open(os.path.join("tests", "images", "large.jpg"), "rb") as f:
@@ -434,7 +367,7 @@ class ExifTests(unittest.TestCase):
     def test_roundtrip_files(self):
         files = glob.glob(os.path.join("tests", "images", "r_*.jpg"))
         for input_file in files:
-            logging.info(f"loading input file: %s", input_file)
+            logging.info("loading input file: %s", input_file)
             exif = piexif.load(input_file)
             exif_bytes = piexif.dump(exif)
             o = io.BytesIO()
@@ -562,7 +495,7 @@ class ExifTests(unittest.TestCase):
         exif_dict = {"0th": ZEROTH_IFD, "Exif": EXIF_IFD, "GPS": GPS_IFD}
         exif_bytes = piexif.dump(exif_dict)
         piexif.insert(exif_bytes, INPUT_FILE1, "insert.jpg")
-        exif = load_exif_by_PIL("insert.jpg")
+        load_exif_by_PIL("insert.jpg")
 
         piexif.insert(exif_bytes, NOEXIF_FILE, "insert.jpg")
 
@@ -579,7 +512,7 @@ class ExifTests(unittest.TestCase):
         o = io.BytesIO()
         piexif.insert(exif_bytes, I1, o)
         self.assertEqual(o.getvalue()[0:2], b"\xff\xd8")
-        exif = load_exif_by_PIL(o)
+        load_exif_by_PIL(o)
 
     def test_insert_fail1(self):
         with open(INPUT_FILE1, "rb") as f:
@@ -612,449 +545,60 @@ class ExifTests(unittest.TestCase):
 
     # test utility methods----------------------------------------------
 
-    def _compare_value(self, v1, v2):
-        if type(v1) != type(v2):
+    def _compare_value(self, v1, v2, key, ifd):
+        fail_msg = f"Unequal for key {ifd}-'{hex(key)}': {v1}, {v2}"
+        if type(v1) is not type(v2):
             if isinstance(v1, tuple):
-                self.assertEqual(pack_byte(*v1), v2)
+                if isinstance(v2, IFDRational):
+                    self.assertEqual(v1[0], v2.numerator, fail_msg)
+                    self.assertEqual(v1[1], v2.denominator, fail_msg)
+                else:
+                    self.assertEqual(pack_byte(*v1), v2, fail_msg)
             elif isinstance(v1, int):
-                self.assertEqual(struct.pack("B", v1), v2)
+                try:
+                    v1_conv = struct.pack("B", v1)
+                except Exception:
+                    raise ValueError(fail_msg)
+                self.assertEqual(v1_conv, v2, fail_msg)
             elif isinstance(v2, int):
-                self.assertEqual(struct.pack("B", v2), v1)
+                self.assertEqual(struct.pack("B", v2), v1, fail_msg)
             elif isinstance(v1, bytes) and isinstance(v2, str):
                 try:
-                    self.assertEqual(v1, v2.encode("latin1"))
-                except:
-                    self.assertEqual(v1, v2)
+                    self.assertEqual(v1, v2.encode("latin1"), fail_msg)
+                except Exception:
+                    self.assertEqual(v1, v2, fail_msg)
             else:
                 try:
-                    self.assertEqual(v1, v2.encode("latin1"))
-                except:
-                    self.assertEqual(v1, v2)
+                    self.assertEqual(v1, v2.encode("latin1"), fail_msg)
+                except Exception:
+                    self.assertEqual(v1, v2, fail_msg)
         else:
-            self.assertEqual(v1, v2)
+            if isinstance(v1, tuple):
+                self.assertEqual(len(v1), len(v2), fail_msg)
+                for n, (sub_v1, sub_v2) in enumerate(zip(v1, v2)):
+                    self._compare_value(sub_v1, sub_v2, key, ifd)
+            else:
+                self.assertEqual(v1, v2, fail_msg)
 
     def _compare_piexifDict_PILDict(self, piexifDict, pilDict):
         zeroth_ifd = piexifDict["0th"]
         exif_ifd = piexifDict["Exif"]
         gps_ifd = piexifDict["GPS"]
-        if 41728 in exif_ifd:
-            exif_ifd.pop(41728)  # value type is UNDEFINED but PIL returns int
-        if 34853 in pilDict:
-            gps = pilDict.pop(34853)
+        if 0xA300 in exif_ifd:
+            exif_ifd.pop(0xA300)  # value type is UNDEFINED but PIL returns int
 
         for key in sorted(zeroth_ifd):
             if key in pilDict:
-                self._compare_value(zeroth_ifd[key], pilDict[key])
-                try:
-                    logging.debug(
-                        TAGS["0th"][key]["name"],
-                        zeroth_ifd[key][:10],
-                        pilDict[key][:10],
-                    )
-                except:
-                    logging.debug(
-                        TAGS["0th"][key]["name"], zeroth_ifd[key], pilDict[key]
-                    )
+                if key == 0x8825:
+                    continue
+                self._compare_value(zeroth_ifd[key], pilDict[key], key, "0th")
+
         for key in sorted(exif_ifd):
             if key in pilDict:
-                self._compare_value(exif_ifd[key], pilDict[key])
-                try:
-                    logging.debug(
-                        TAGS["Exif"][key]["name"],
-                        exif_ifd[key][:10],
-                        pilDict[key][:10],
-                    )
-                except:
-                    logging.debug(TAGS["Exif"][key]["name"], exif_ifd[key], pilDict[key])
-        for key in sorted(gps_ifd):
-            if key in gps:
-                self._compare_value(gps_ifd[key], gps[key])
-                try:
-                    logging.debug(
-                        TAGS["GPS"][key]["name"], gps_ifd[key][:10], gps[key][:10]
-                    )
-                except:
-                    logging.debug(TAGS["GPS"][key]["name"], gps_ifd[key], gps[key])
+                self._compare_value(exif_ifd[key], pilDict[key], key, "Exif")
 
-
-class UTests(unittest.TestCase):
-    def test_ExifReader_return_unknown(self):
-        b1 = b"MM\x00\x2a\x00\x00\x00\x08"
-        b2 = b"\x00\x01" + b"\xff\xff\x00\x00\x00\x00" + b"\x00\x00\x00\x00"
-        er = piexif._load._ExifReader(b1 + b2)
-        if er.tiftag[0:2] == b"II":
-            er.endian_mark = "<"
-        else:
-            er.endian_mark = ">"
-        ifd = er.get_ifd_dict(8, "0th", True)
-        self.assertEqual(ifd[65535][0], 0)
-        self.assertEqual(ifd[65535][1], 0)
-        self.assertEqual(ifd[65535][2], b"\x00\x00")
-
-    def test_ExifReader_convert_value_fail(self):
-        er = piexif._load._ExifReader(I1)
-        with self.assertRaises(ValueError):
-            er.convert_value((None, None, None, None))
-
-    def test_split_into_segments_fail1(self):
-        with self.assertRaises(InvalidImageDataError):
-            _common.split_into_segments(b"I'm not JPEG")
-
-    def test_split_into_segments_fail2(self):
-        with self.assertRaises(ValueError):
-            _common.split_into_segments(b"\xff\xd8\xff\xe1\xff\xff")
-
-    def test_merge_segments(self):
-        # Remove APP0, when both APP0 and APP1 exists.
-        with open(INPUT_FILE1, "rb") as f:
-            original = f.read()
-        segments = _common.split_into_segments(original)
-        new_data = _common.merge_segments(segments)
-        segments = _common.split_into_segments(new_data)
-        self.assertFalse(
-            segments[1][0:2] == b"\xff\xe0" and segments[2][0:2] == b"\xff\xe1"
-        )
-        self.assertEqual(segments[1][0:2], b"\xff\xe1")
-        o = io.BytesIO(new_data)
-        without_app0 = o.getvalue()
-        Image.open(o).close()
-
-        exif = _common.get_exif_seg(segments)
-
-        # Remove Exif, when second 'merged_segments' arguments is None
-        # and no APP0.
-        segments = _common.split_into_segments(without_app0)
-        new_data = _common.merge_segments(segments, None)
-        segments = _common.split_into_segments(new_data)
-        self.assertNotEqual(segments[1][0:2], b"\xff\xe0")
-        self.assertNotEqual(segments[1][0:2], b"\xff\xe1")
-        self.assertNotEqual(segments[2][0:2], b"\xff\xe1")
-        o = io.BytesIO(new_data)
-        Image.open(o).close()
-
-        # Insert exif to jpeg that has APP0 and Exif.
-        o = io.BytesIO()
-        i = Image.new("RGB", (8, 8))
-        i.save(o, format="jpeg", exif=exif)
-        o.seek(0)
-        segments = _common.split_into_segments(o.getvalue())
-        new_data = _common.merge_segments(segments, exif)
-        segments = _common.split_into_segments(new_data)
-        self.assertFalse(
-            segments[1][0:2] == b"\xff\xe0" and segments[2][0:2] == b"\xff\xe1"
-        )
-        self.assertEqual(segments[1], exif)
-        o = io.BytesIO(new_data)
-        Image.open(o).close()
-
-        # Insert exif to jpeg that doesn't have APP0 and Exif.
-        with open(NOAPP01_FILE, "rb") as f:
-            original = f.read()
-        segments = _common.split_into_segments(original)
-        new_data = _common.merge_segments(segments, exif)
-        segments = _common.split_into_segments(new_data)
-        self.assertEqual(segments[1][0:2], b"\xff\xe1")
-        o = io.BytesIO(new_data)
-        Image.open(o).close()
-
-        # Remove Exif, when second 'merged_segments' arguments is None
-        # and Exif exists.
-        with open(INPUT_FILE1, "rb") as f:
-            original = f.read()
-        segments = _common.split_into_segments(original)
-        new_data = _common.merge_segments(segments, None)
-        segments = _common.split_into_segments(new_data)
-        self.assertNotEqual(segments[1][0:2], b"\xff\xe1")
-        self.assertNotEqual(segments[2][0:2], b"\xff\xe1")
-        o = io.BytesIO(new_data)
-        Image.open(o).close()
-
-    def test_dump_user_comment(self):
-        # ascii
-        header = b"\x41\x53\x43\x49\x49\x00\x00\x00"
-        string = "abcd"
-        binary = header + string.encode("ascii")
-        result = helper.UserComment.dump(string, "ascii")
-        self.assertEqual(binary, result)
-
-        # jis
-        header = b"\x4a\x49\x53\x00\x00\x00\x00\x00"
-        string = "abcd"
-        binary = header + string.encode("shift_jis")
-        result = helper.UserComment.dump(string, "jis")
-        self.assertEqual(binary, result)
-
-        # unicode
-        header = b"\x55\x4e\x49\x43\x4f\x44\x45\x00"
-        string = "abcd"
-        binary = header + string.encode("utf-16-be")
-        result = helper.UserComment.dump(string, "unicode")
-        self.assertEqual(binary, result)
-
-        # undefined
-        header = b"\x00\x00\x00\x00\x00\x00\x00\x00"
-        string = "abcd"
-        binary = header + string.encode("latin")
-        self.assertRaises(ValueError, helper.UserComment.dump, string, "undefined")
-
-    def test_load_user_comment(self):
-        # ascii
-        header = b"\x41\x53\x43\x49\x49\x00\x00\x00"
-        string = "abcd"
-        binary = header + string.encode("ascii")
-        result = helper.UserComment.load(binary)
-        self.assertEqual(string, result)
-
-        # jis
-        header = b"\x4a\x49\x53\x00\x00\x00\x00\x00"
-        string = "abcd"
-        binary = header + string.encode("shift_jis")
-        result = helper.UserComment.load(binary)
-        self.assertEqual(string, result)
-
-        # unicode
-        header = b"\x55\x4e\x49\x43\x4f\x44\x45\x00"
-        string = "abcd"
-        binary = header + string.encode("utf-16-be")
-        result = helper.UserComment.load(binary)
-        self.assertEqual(string, result)
-
-        # undefined
-        header = b"\x00\x00\x00\x00\x00\x00\x00\x00"
-        string = "abcd"
-        binary = header + string.encode("ascii")
-        self.assertRaises(ValueError, helper.UserComment.load, binary)
-
-
-class HelperTests(unittest.TestCase):
-    def test_headers(self):
-        """Are our headers the correct length?"""
-        self.assertEqual(
-            len(helper.UserComment._ASCII_PREFIX), helper.UserComment._PREFIX_SIZE
-        )
-        self.assertEqual(
-            len(helper.UserComment._JIS_PREFIX), helper.UserComment._PREFIX_SIZE
-        )
-        self.assertEqual(
-            len(helper.UserComment._UNICODE_PREFIX), helper.UserComment._PREFIX_SIZE
-        )
-        self.assertEqual(
-            len(helper.UserComment._UNDEFINED_PREFIX), helper.UserComment._PREFIX_SIZE
-        )
-
-    def test_encode_ascii(self):
-        """Do we encode ASCII correctly?"""
-        text = "hello world"
-        expected = b"\x41\x53\x43\x49\x49\x00\x00\x00hello world"
-        actual = helper.UserComment.dump(text, encoding="ascii")
-        self.assertEqual(expected, actual)
-
-    def test_decode_ascii(self):
-        """Do we decode ASCII correctly?"""
-        binary = b"\x41\x53\x43\x49\x49\x00\x00\x00hello world"
-        expected = "hello world"
-        actual = helper.UserComment.load(binary)
-        self.assertEqual(expected, actual)
-
-    def test_encode_jis(self):
-        """Do we encode JIS correctly?"""
-        text = "\u3053\u3093\u306b\u3061\u306f\u4e16\u754c"
-        expected = b"\x4a\x49\x53\x00\x00\x00\x00\x00" + text.encode("shift_jis")
-        actual = helper.UserComment.dump(text, encoding="jis")
-        self.assertEqual(expected, actual)
-
-    def test_decode_jis(self):
-        """Do we decode JIS correctly?"""
-        expected = "\u3053\u3093\u306b\u3061\u306f\u4e16\u754c"
-        binary = b"\x4a\x49\x53\x00\x00\x00\x00\x00" + expected.encode("shift_jis")
-        actual = helper.UserComment.load(binary)
-        self.assertEqual(expected, actual)
-
-    def test_encode_unicode(self):
-        """Do we encode Unicode correctly?"""
-        text = "\u3053\u3093\u306b\u3061\u306f\u4e16\u754c"
-        expected = b"\x55\x4e\x49\x43\x4f\x44\x45\x00" + text.encode("utf_16_be")
-        actual = helper.UserComment.dump(text, encoding="unicode")
-        self.assertEqual(expected, actual)
-
-    def test_decode_unicode(self):
-        """Do we decode Unicode correctly?"""
-        expected = "\u3053\u3093\u306b\u3061\u306f\u4e16\u754c"
-        binary = b"\x55\x4e\x49\x43\x4f\x44\x45\x00" + expected.encode("utf_16_be")
-        actual = helper.UserComment.load(binary)
-        self.assertEqual(expected, actual)
-
-    def test_encode_bad_encoding(self):
-        """De we gracefully handle bad input when encoding?"""
-        self.assertRaises(ValueError, helper.UserComment.dump, "hello world", "koi-8r")
-
-    def test_decode_bad_encoding(self):
-        """De we gracefully handle bad input when decoding?"""
-        self.assertRaises(
-            ValueError,
-            helper.UserComment.load,
-            b"\x00\x00\x00\x00\x00\x00\x00\x00hello",
-        )
-        self.assertRaises(
-            ValueError,
-            helper.UserComment.load,
-            b"\x12\x34\x56\x78\x9a\xbc\xde\xffhello",
-        )
-        self.assertRaises(ValueError, helper.UserComment.load, b"hello world")
-
-
-class WebpTests(unittest.TestCase):
-    def setUp(self):
-        if not os.path.exists(OUT_DIR):
-            os.mkdir(OUT_DIR)
-
-    def test_merge_chunks(self):
-        """Can PIL open our output WebP?"""
-        files = [
-            "tool1.webp",
-            "pil1.webp",
-            "pil2.webp",
-            "pil3.webp",
-            "pil_rgb.webp",
-            "pil_rgba.webp",
-        ]
-
-        for filename in iter_pil_compatible_images(files):
-            with open(IMAGE_DIR + filename, "rb") as f:
-                data = f.read()
-
-            chunks = _webp.split(data)
-            file_header = _webp.get_file_header(chunks)
-            merged = _webp.merge_chunks(chunks)
-            new_webp_bytes = file_header + merged
-            with open(OUT_DIR + "raw_" + filename, "wb") as f:
-                f.write(new_webp_bytes)
-            Image.open(OUT_DIR + "raw_" + filename)
-
-    def test_insert_exif(self):
-        """Can PIL open WebP that is inserted exif?"""
-        files = [
-            "tool1.webp",
-            "pil1.webp",
-            "pil2.webp",
-            "pil3.webp",
-            "pil_rgb.webp",
-            "pil_rgba.webp",
-        ]
-
-        exif_dict = {
-            "0th": {
-                piexif.ImageIFD.Software: b"PIL",
-                piexif.ImageIFD.Make: b"Make",
-            }
-        }
-
-        for filename in iter_pil_compatible_images(files):
-            with open(IMAGE_DIR + filename, "rb") as f:
-                data = f.read()
-            exif_bytes = piexif.dump(exif_dict)
-            exif_inserted = _webp.insert(data, exif_bytes)
-            with open(OUT_DIR + "i_" + filename, "wb") as f:
-                f.write(exif_inserted)
-            Image.open(OUT_DIR + "i_" + filename)
-
-    def test_remove_exif(self):
-        """Can PIL open WebP that is removed exif?"""
-        files = [
-            "tool1.webp",
-            "pil1.webp",
-            "pil2.webp",
-            "pil3.webp",
-            "pil_rgb.webp",
-            "pil_rgba.webp",
-        ]
-
-        for filename in iter_pil_compatible_images(files):
-            with open(IMAGE_DIR + filename, "rb") as f:
-                data = f.read()
-            exif_removed = _webp.remove(data)
-            with open(OUT_DIR + "r_" + filename, "wb") as f:
-                f.write(exif_removed)
-            Image.open(OUT_DIR + "r_" + filename)
-
-    def test_get_exif(self):
-        """Can we get exif from WebP?"""
-        files = [
-            "tool1.webp",
-        ]
-
-        for filename in iter_pil_compatible_images(files):
-            with open(IMAGE_DIR + filename, "rb") as f:
-                data = f.read()
-            exif_bytes = _webp.get_exif(data)
-            self.assertEqual(exif_bytes[0:2], b"MM")
-
-    def test_load(self):
-        """Can we get exif from WebP?"""
-        files = [
-            "tool1.webp",
-        ]
-
-        for filename in iter_pil_compatible_images(files):
-            logging.info(piexif.load(IMAGE_DIR + filename))
-
-    def test_remove(self):
-        """Can PIL open WebP that is removed exif?"""
-        files = [
-            "tool1.webp",
-            "pil1.webp",
-            "pil2.webp",
-            "pil3.webp",
-            "pil_rgb.webp",
-            "pil_rgba.webp",
-        ]
-
-        for filename in iter_pil_compatible_images(files):
-            Image.open(IMAGE_DIR + filename)
-            piexif.remove(IMAGE_DIR + filename, OUT_DIR + "rr_" + filename)
-            Image.open(OUT_DIR + "rr_" + filename)
-
-    def test_insert(self):
-        """Can PIL open WebP that is inserted exif?"""
-        files = [
-            "tool1.webp",
-            "pil1.webp",
-            "pil2.webp",
-            "pil3.webp",
-            "pil_rgb.webp",
-            "pil_rgba.webp",
-        ]
-
-        exif_dict = {
-            "0th": {
-                piexif.ImageIFD.Software: b"PIL",
-                piexif.ImageIFD.Make: b"Make",
-            }
-        }
-        exif_bytes = piexif.dump(exif_dict)
-
-        for filename in files:
-            try:
-                Image.open(IMAGE_DIR + filename)
-            except:
-                print("Pillow can't read {}".format(filename))
-                continue
-            piexif.insert(exif_bytes, IMAGE_DIR + filename, OUT_DIR + "ii_" + filename)
-            Image.open(OUT_DIR + "ii_" + filename)
-
-
-def suite():
-    suite = unittest.TestSuite()
-    suite.addTests(
-        [
-            unittest.makeSuite(UTests),
-            unittest.makeSuite(ExifTests),
-            unittest.makeSuite(HelperTests),
-            unittest.makeSuite(WebpTests),
-        ]
-    )
-    return suite
-
-
-if __name__ == "__main__":
-    unittest.main()
+        if 0x8825 in pilDict:
+            gps = pilDict.pop(0x8825)
+            for key in sorted(gps_ifd):
+                if key in gps:
+                    self._compare_value(gps_ifd[key], gps[key], key, "GPS")

@@ -2,9 +2,9 @@ import struct
 import sys
 
 from piexif import _webp
-from ._common import *
+from ._common import split_into_segments, read_exif_from_file, get_exif_seg
 from ._exceptions import InvalidImageDataError
-from ._exif import *
+from ._exif import ExifIFD, ImageIFD, TAGS, TYPES
 
 LITTLE_ENDIAN = b"\x49\x49"
 
