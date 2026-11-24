@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+- Store TimeZoneOffset as a signed short so that negative offsets round-trip.
+  Related to https://github.com/hMatoba/Piexif/issues/135.
+
 1.1.3
 -----
 

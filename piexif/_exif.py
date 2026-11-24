@@ -102,7 +102,7 @@ TAGS = {
         34675: {"name": "InterColorProfile", "type": TYPES.Undefined},
         34853: {"name": "GPSTag", "type": TYPES.Long},
         34857: {"name": "Interlace", "type": TYPES.Short},
-        34858: {"name": "TimeZoneOffset", "type": TYPES.Long},
+        34858: {"name": "TimeZoneOffset", "type": TYPES.SShort},
         34859: {"name": "SelfTimerMode", "type": TYPES.Short},
         37387: {"name": "FlashEnergy", "type": TYPES.Rational},
         37388: {"name": "SpatialFrequencyResponse", "type": TYPES.Undefined},
